@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tab Sorter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Group tabs automatically with fixed rules (Jev) or any OpenAI-compatible LLM that invents its own group names.",
   "permissions": ["tabs", "tabGroups", "storage", "contextMenus"],
   "host_permissions": ["https://api.typesafe.ai/*", "http://localhost/*", "http://127.0.0.1/*"],

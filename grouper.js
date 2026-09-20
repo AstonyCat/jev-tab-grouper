@@ -269,6 +269,18 @@ async function groupAll(windowId, engineOverride) {
   await setBadgeIfPossible("…", "#666");
   await log("info", "group_start", { engine, tabs: targets.length, skippedManual: manual.length });
 
+  // Remember the pre-grouping tab order (once per window) so ungroup can restore it —
+  // chrome.tabs.group() physically moves tabs together, which scrambles the order.
+  // (Save ALL non-pinned tabs incl. this extension's pages, so nothing gets displaced.)
+  const orderStore = (await chrome.storage.local.get("tabOrder")).tabOrder || {};
+  if (!orderStore[windowId]) {
+    orderStore[windowId] = all.filter(t => !t.pinned).map(t => t.id);
+    const keys = Object.keys(orderStore);
+    if (keys.length > 10) delete orderStore[keys[0]];   // keep the map small
+    await chrome.storage.local.set({ tabOrder: orderStore });
+    await log("info", "order_saved", { windowId, tabs: orderStore[windowId].length });
+  }
+
   let labels, idxs, usage;
   try {
     if (engine === ENGINES.LLM) {
@@ -345,9 +357,35 @@ async function ungroupAll(windowId, onlyMine = false) {
   const tabIds = (await Promise.all(targets.map(g => chrome.tabs.query({ groupId: g.id }))))
     .flat().map(t => t.id);
   if (tabIds.length) await chrome.tabs.ungroup(tabIds);
+
+  // Restore the pre-grouping order: grouped tabs were moved together, so ungrouping
+  // alone leaves them scrambled. Rebuild the saved sequence (any tabs opened after
+  // grouping keep their relative order at the end).
+  let restored = 0;
+  const orderStore = (await chrome.storage.local.get("tabOrder")).tabOrder || {};
+  const saved = orderStore[windowId];
+  if (Array.isArray(saved) && saved.length) {
+    const current = await chrome.tabs.query({ windowId });
+    const alive = new Map(current.map(t => [t.id, t]));
+    const ordered = saved.filter(id => alive.has(id) && !alive.get(id).pinned);
+    const rest = current.filter(t => !t.pinned && !ordered.includes(t.id)).map(t => t.id);
+    const finalIds = [...ordered, ...rest];
+    const pinnedCount = current.filter(t => t.pinned).length;
+    if (finalIds.length > 1) {
+      try {
+        await chrome.tabs.move(finalIds, { index: pinnedCount });  // preserves array order
+        restored = finalIds.length;
+      } catch (e) {
+        await log("warn", "order_restore_fail", { message: String(e) });
+      }
+    }
+    delete orderStore[windowId];
+    await chrome.storage.local.set({ tabOrder: orderStore });
+  }
+
   await chrome.storage.local.set({ myGroupIds: [] });
-  await log("info", "ungroup", { onlyMine, dissolved: targets.length, tabs: tabIds.length });
-  return { dissolved: targets.length, tabs: tabIds.length };
+  await log("info", "ungroup", { onlyMine, dissolved: targets.length, tabs: tabIds.length, restoredOrder: restored });
+  return { dissolved: targets.length, tabs: tabIds.length, restoredOrder: restored };
 }
 
 globalThis.TabSorter = {
