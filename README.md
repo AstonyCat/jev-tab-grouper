@@ -6,7 +6,7 @@
 
 One click. Every tab in the window sorts itself into named, colored groups.
 
-[![Chrome MV3](https://img.shields.io/badge/Chrome-MV3-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Release](https://img.shields.io/badge/release-v1.0.0-blue)](../../releases)
+[![Chrome MV3](https://img.shields.io/badge/Chrome-MV3-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Release](https://img.shields.io/badge/release-v1.0.1-blue)](../../releases)
 
 </div>
 
@@ -49,7 +49,7 @@ git clone https://github.com/AstonyCat/jev-tab-grouper
 `chrome://extensions` → Developer mode → **Load unpacked** → select the folder.
 
 ### From release zip
-Grab `tab-sorter-v1.0.0.zip` from [Releases](../../releases), unzip, load unpacked.
+Grab `tab-sorter-v1.0.1.zip` from [Releases](../../releases), unzip, load unpacked.
 
 ## Setup
 
