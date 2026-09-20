@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tab Sorter — Settings</title>
+<style>
+  :root { color-scheme: light; }
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 32px auto; padding: 0 16px; color: #222; }
+  h1 { font-size: 20px; }
+  h2 { font-size: 15px; margin: 28px 0 8px; color: #333; }
+  label { display: block; font-weight: 600; margin: 14px 0 4px; }
+  input[type=password], input[type=text], textarea {
+    width: 100%; box-sizing: border-box; padding: 8px 10px;
+    border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
+  }
+  textarea { height: 180px; font-family: ui-monospace, monospace; font-size: 13px; }
+  textarea#llmPrompt { height: 140px; }
+  .hint { color: #666; font-size: 13px; margin-top: 4px; }
+  .row { display: flex; gap: 10px; }
+  .row > div { flex: 1; }
+  button { margin-top: 12px; padding: 8px 18px; border: 0; border-radius: 6px;
+           background: #1a73e8; color: #fff; font-size: 14px; cursor: pointer; }
+  button.secondary { background: #5f6368; }
+  button.run { background: #188038; }
+  button.danger { background: #b3261e; }
+  #status { margin-left: 12px; font-size: 14px; }
+  .engine-picker { display: flex; gap: 16px; margin: 8px 0 4px; }
+  .engine-picker label { display: flex; align-items: center; gap: 6px; font-weight: 500; margin: 0; }
+  #logBox {
+    height: 260px; overflow-y: auto; background: #1e1e1e; color: #d4d4d4;
+    font-family: ui-monospace, monospace; font-size: 12px; line-height: 1.5;
+    border-radius: 6px; padding: 10px; margin-top: 8px; white-space: pre-wrap; word-break: break-all;
+  }
+  .lv-info { color: #9cdcfe; } .lv-warn { color: #dcdcaa; } .lv-error { color: #f48771; }
+  .lv-time { color: #6a9955; }
+  fieldset { border: 1px solid #ddd; border-radius: 8px; margin-top: 12px; }
+  legend { font-weight: 600; font-size: 13px; padding: 0 6px; }
+</style>
+</head>
+<body>
+<h1>Tab Sorter — Settings</h1>
+
+<h2>Default engine</h2>
+<div class="engine-picker">
+  <label><input type="radio" name="engine" value="jev" checked> Rules (Jev, fixed groups)</label>
+  <label><input type="radio" name="engine" value="llm"> LLM (auto-generated group names)</label>
+</div>
+<div class="hint">Toolbar click uses the default engine. The right-click menu can always invoke either one.</div>
+
+<fieldset>
+<legend>Rules engine — Jev</legend>
+<label for="jevKey">Jev API key (typesafe.ai)</label>
+<input type="password" id="jevKey" placeholder="paste your typesafe.ai key">
+<div class="hint">Stored locally in chrome.storage.local only.</div>
+
+<label for="ruleGroups">Group rules (one per line: label | description)</label>
+<textarea id="ruleGroups"></textarea>
+<div class="hint">The LAST line is always the fallback group — keep it.</div>
+<button id="testJev" class="secondary">Test Jev connection</button>
+</fieldset>
+
+<fieldset>
+<legend>LLM engine — OpenAI-compatible chat API</legend>
+<div class="row">
+  <div>
+    <label for="llmBase">Base URL</label>
+    <input type="text" id="llmBase" placeholder="http://localhost:3000/v1">
+  </div>
+  <div>
+    <label for="llmModel">Model</label>
+    <input type="text" id="llmModel" placeholder="glm-5.3-flash">
+  </div>
+</div>
+<label for="llmKey">API key</label>
+<input type="password" id="llmKey" placeholder="sk-...">
+
+<label for="llmPrompt">Custom system prompt (optional — empty = built-in default)</label>
+<textarea id="llmPrompt" placeholder='Empty = built-in prompt. A custom prompt MUST still demand strict JSON: {"groups":[{"label":"...","description":"...","members":[0,1]}]}'></textarea>
+<button id="testLlm" class="secondary">Test LLM connection</button>
+</fieldset>
+
+<h2>Last LLM-generated groups <span style="font-weight:400;font-size:12px;color:#666">(auto-saved after each LLM run)</span></h2>
+<div id="llmGroupsBox" class="hint">No LLM run yet.</div>
+<button id="adoptLlm" class="secondary" style="display:none">Adopt as my rules (append to rule list)</button>
+
+<h2>Actions</h2>
+<button id="runJev" class="run">Group now (rules)</button>
+<button id="runLlm" class="run">Group now (LLM)</button>
+<button id="ungroup" class="danger">Ungroup (this extension only)</button>
+<span id="status"></span>
+
+<h2>Logs <span style="font-weight:400;font-size:12px;color:#666">(last 200 events; errors carry HTTP status + response body)</span></h2>
+<button id="refreshLogs" class="secondary">Refresh</button>
+<button id="clearLogs" class="danger">Clear</button>
+<div id="logBox">loading…</div>
+
+<script src="grouper.js"></script>
+<script src="options.js"></script>
+</body>
+</html>
